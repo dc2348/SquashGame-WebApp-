@@ -1,0 +1,206 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>GameOver</title>
+<link rel="stylesheet" href="$$LGWAFLibrary/css/squashgame.css" type="text/css"/>
+
+<style type="text/css">
+@font-face{
+font-family:"Showcard Gothic";
+font-weight:normal;
+font-style:normal;
+src:url("$$LGWAFLibrary/fonts/SHOWG.TTF.woff") format("woff"),
+url("$$LGWAFLibrary/fonts/SHOWG.ttf") format("truetype");
+}
+
+#game{
+	position:absolute;
+    font-family : Geo;
+    color : rgb(200,200,100);
+	width: 1260px;
+	height: 700px;
+	
+}
+
+#background{
+	position:absolute;
+	left:0;
+	top:0;
+	width:100%;
+	height: 100%;
+	z-index:0;	
+}
+
+#background canvas{
+	width:100%;
+	height: 100%;
+}
+
+
+.mode{
+	font-family: "Showcard Gothic";
+	font-size:80px;
+    color : #FF007F;
+    text-shadow : 0.03em  0.03em  0.03em #FFD9FA,
+                 -0.03em -0.03em  0.03em #FFD9FA,
+                  0.10em  0.15em  0.15em rgb(0,0,0);
+	text-align:center;
+	margin-bottom:0;
+}
+
+button {
+    font-family : Showcard Gothic;
+    font-size : 20px;
+    color : #FF007F;
+    width : 15em;
+    height : 4em;
+    background:rgba(255,255,255,0.5);
+    border : 0.1em solid #FFD9FA;
+    border-radius : 50px;
+    -webkit-box-shadow : 0.2em 0.2em 0.3em rgb(0,0,0);
+    -moz-box-shadow : 0.2em 0.2em 0.3em rgb(0,0,0);
+    box-shadow : 0.2em 0.2em 0.3em rgb(0,0,0);
+	margin-left:30px;
+	margin-right:30px;
+	margin-top:30px;
+}
+
+footer{
+	margin-top:20px;
+	text-align:center;	
+}
+
+button:hover {
+    background : rgb(255,235,255);
+}
+
+button:active {
+    color : #FFD9FA;
+    background : rgb(255,235,255);
+}
+
+#layerPop{
+	font-family:LG display;
+	color:#4641D9;
+	width:700px;height:500px;
+	position:absolute;
+	display:none;
+	border:1px solid #ccc;
+	padding:1px;
+	background:#DAD9FF;
+	}
+#layerPop .close{
+	position:absolute;
+	bottom:5px;
+	right:5px;
+}
+</style>
+
+<script>
+
+//start Game 버튼누르면 게임화면으로넘어가기
+function startGame(){
+	location="mode.html";		
+}
+	//레이어 팝업 열기
+function openLayer(IdName, tpos, lpos){
+		var pop = document.getElementById(IdName);
+		pop.style.display = "block";
+		pop.style.top = tpos + "px";
+		pop.style.left = lpos + "px";
+	}
+
+	//레이어 팝업 닫기
+function closeLayer(IdName){
+		var pop = document.getElementById(IdName);
+		pop.style.display = "none";
+	}
+	
+//앱종료	
+function back(){
+ window.NetCastBack();
+}
+	//줄무늬 배경만들기
+window.onload = function(){
+		
+		var background = document.getElementById("background");
+
+        var canvas = document.createElement("canvas"),
+            ctx = canvas.getContext("2d"),
+            gradient, 
+			i;
+
+        canvas.width = 1260;
+        canvas.height = 700;
+
+        ctx.scale(1260, 700);
+
+        gradient = ctx.createRadialGradient(
+            0.25, 0.15, 0.5,
+            0.25, 0.15, 1
+        );
+        gradient.addColorStop(0, "rgb(169,218,232)");
+        gradient.addColorStop(1, "rgb(153,243,89)");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 1, 1);
+
+        ctx.strokeStyle = "rgba(255,255,255,0.02)";
+        ctx.strokeStyle = "rgba(0,0,0,0.2)";
+        ctx.lineWidth = 0.008;
+        ctx.beginPath();
+        for (i=0;i<2;i+=0.020) {
+            ctx.moveTo(i, 0);
+            ctx.lineTo(i - 1, 1);
+        }
+        ctx.stroke();
+        background.appendChild(canvas);
+}
+
+
+
+</script>
+</head>
+
+<body>
+<div id="background">
+<div id="game">
+    <p class="squashgame">Squash Game</p>
+    <div id="listdiv"></div>
+    <footer>
+        <button name="startgame" onClick="startGame()" style="cursor:pointer">Start Game</button><br>
+		<button name="explain" onClick="openLayer('layerPop',200,350)" style="cursor:pointer">Explain</button><br>
+        <button name="exitgame" onClick="back()" style="cursor:pointer">Exit</button>
+        
+        <div id="layerPop">
+			<h1><b>Try this!</h1>
+			<ul type="square">
+				<li><h2><b>Please press once "start" button!</b>&nbsp;&nbsp;&nbsp;&nbsp;<img src="$$LGWAFLibrary/images/start.png" style="width: 144px; height: 51px"></h2>
+					<li><h3><b>forehand & backhand</b><br>
+					<img src="$$LGWAFLibrary/images/explain1.png" width="298" height="99">
+					<img src="$$LGWAFLibrary/images/explain2.png" width="298" height="99"><br>
+					- swing the smart phone! </h3>
+					
+				<li><h3><b>foot<br>
+					<img src="$$LGWAFLibrary/images/left.png" width="298" height="99">
+					<img src="$$LGWAFLibrary/images/right.png" width="298" height="99"><br>
+					- press the foot switch! </h3>
+					</b>
+					
+					
+			
+				<a href="#" onclick="closeLayer('layerPop')" class="close">
+			<button name="closePop" onFocus="this.blur()" style="cursor:pointer; width: 100px; height: 50px">close</button><br></a>
+			</li>
+			</ul>
+		</div>
+    </footer>
+    <div>
+		<object type="application/x-netcast-av" data="$$LGWAFLibrary/sound/Controlmessage.mp3" width="0"
+		height="0" playcount="0" id="media" autoStart="true"></object>
+	</div>
+</div>
+</div>
+</body>
+</html>
+

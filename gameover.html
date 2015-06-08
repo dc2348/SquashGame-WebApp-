@@ -1,0 +1,257 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>GameOver</title>
+
+<link type="text/css" rel="Stylesheet" href="jslgvkeyboard_1.7_2/LgVKeyboard.css"/>
+<script id="mainVKScript" type="text/javascript"
+src="jslgvkeyboard_1.7_2/LgVKeyboard.js"></script>
+
+<style type="text/css">
+
+@font-face{
+
+font-family:"Showcard Gothic";
+font-weight:normal;
+font-style:normal;
+font-size:20px;
+src:url("$$LGWAFLibrary/fonts/SHOWG.TTF.woff") format("woff"),
+url("$$LGWAFLibrary/fonts/SHOWG.TTF") format("truetype");
+
+}
+
+body{
+	background: rgb(169,238,200);
+}
+
+.gameover{
+	font-family: "Showcard Gothic";
+	font-size:80px;
+    color : #FF007F;
+    text-shadow : 0.03em  0.03em  0.03em #FFD9FA,
+                 -0.03em -0.03em  0.03em #FFD9FA,
+                  0.10em  0.15em  0.15em rgb(0,0,0);
+	text-align:center;
+	margin-bottom:0;
+}
+
+.score{
+	font-family: "Showcard Gothic";
+	font-size:40px;
+	text-align:center;
+	margin-top:0;
+}
+
+#listdiv{
+	margin-left:35%;
+	margin-right:15%;
+}
+
+
+#scorelist li{
+	width:100%;
+	font-size:24px;
+}
+	
+#scorelist li span:nth-child(1){
+	display:inline-block ;
+	font-size:24px;	
+	text-align:left;
+	margin-left:20px;
+	width:30%;
+}
+
+#scorelist li span:nth-child(2){
+	display:inline-block ;
+	font-size:24px;	
+	text-align:right;
+	margin-left:20px;
+	width:auto;
+}
+
+button {
+    font-family : Showcard Gothic;
+    font-size : 18px;
+    color : #FF007F;
+    width : 15em;
+    height : 4em;
+    background:rgba(255,255,255,0.5);
+    border : 0.1em solid #FFD9FA;
+    border-radius : 50px;
+    -webkit-box-shadow : 0.2em 0.2em 0.3em rgb(0,0,0);
+    -moz-box-shadow : 0.2em 0.2em 0.3em rgb(0,0,0);
+    box-shadow : 0.2em 0.2em 0.3em rgb(0,0,0);
+	margin-left:30px;
+	margin-right:30px;
+	margin-top:30px;
+}
+
+footer{
+	margin-top:50px;
+	text-align:center;	
+}
+
+button:hover {
+    background : rgb(30,40,0);
+}
+
+button:active {
+    color : #FFD9FA;
+    background : rgb(30,40,0);
+}
+
+
+#layerPop{
+	font-family:LG display;
+	width:250px; height:100px;
+	position:absolute;
+	display:none;
+	border:2px solid #ccc;
+	padding:2px;
+	background:#DAD9FF;
+	}
+
+</style>
+
+
+<script>
+
+var input;
+var check=0;
+	
+function onKeyboardShow(event) {}
+function onKeyboardHide(event) {}
+
+onKeyboardShow(event);
+onKeyboardHide(event);
+
+//레이어 팝업 닫기
+function closeLayer(IdName){
+		var pop = document.getElementById(IdName);
+		pop.style.display = "none";
+}
+
+
+window.onload = function (){
+
+	function openLayer(IdName, tpos, lpos){
+			var pop = document.getElementById(IdName);
+			pop.style.display = "block";
+			pop.style.top = tpos + "px";
+			pop.style.left = lpos + "px";
+			
+			show();
+		}
+		
+	function show(){
+		var button = document.getElementById("addButton");
+		button.onclick = doAddButtonClick;
+	}
+	
+	function doAddButtonClick(){
+		input = document.getElementById("guestName").value;
+		if(check==1){
+			test1();
+		}else if(check==2){
+			test2();
+		}
+	}
+		
+	var score = new Array();
+	var findScore = new Array();
+	var nameTemp = new Array();
+	var name = new Array('[10][10]');
+	var key;
+	var value;
+	var m, n;
+	
+	
+	for(var i=0; i<11; i++){
+		score[i]="-";
+		name[i]="null";
+	}	
+	
+	/*var finalscore=1500;
+	localStorage.setItem("finalscore",finalscore);*/
+	score[1] = Number(localStorage.getItem("finalscore"));//localStorage.length=2
+	
+	
+	
+		check=1;
+		openLayer('layerPop',180,500);
+		
+		function test1(){
+			name[1] = input;
+						
+			localStorage.removeItem("finalscore");//localStorage.length=2
+			
+			test3();
+		}
+	
+	
+	function test3(){
+		
+		
+		/*for(var i=0; i<11; i++){
+			score[i]="-";
+			name[i]="null";
+		}	
+		localStorage.clear();*/
+		
+		
+		for(var j=1; j<11; j++){	
+					
+			var nameEl = document.createElement("span");
+			nameEl.innerHTML = "name : "+name[j];
+			
+			var scoreEl = document.createElement("span");
+			scoreEl.innerHTML = " score : "+ score[j];
+		
+			var li = document.createElement("li");	
+			var ol = document.getElementById("scorelist");
+			
+			li.appendChild(nameEl);
+			li.appendChild(scoreEl);	
+			ol.appendChild(li);
+		}	
+	}
+}
+
+
+function returnToGame(){
+	location="mode.html";		
+}
+
+function returnToMenu(){
+	location="menu.html";		
+}
+
+
+</script>
+
+
+</head>
+
+<body>
+
+<p class="gameover">game over</p>
+<p class="score">&lt;score&gt;</p>
+<div id="listdiv">
+<ol id="scorelist"></ol>
+</div>
+<footer>
+    <button name="returntogame" onClick="returnToGame()">Return to Game</button>
+    <button name="returntomenu" onClick="returnToMenu()">Return to Menu</button>
+</footer>
+
+<div id="layerPop">
+	<h2>Please enter your name</h2>
+	<input type="text" id="guestName">
+	<a href="#" onclick="closeLayer('layerPop')" class="close">
+   	<input type="button" name="closePop" id="addButton" value="OK">       	  
+   	</a>
+</div>
+
+</body>
+</html>

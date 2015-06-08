@@ -1,0 +1,924 @@
+﻿<!doctype html>
+<html>
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>코드줄이?</title>
+  
+  <script type="text/javascript">
+
+   var cwidth=1260;
+   var cheight=700;
+   var ballrad=20;
+   var yellowballrad;
+   var boxwidth=1260;
+   var boxheight=700;
+   var boxboundx=boxwidth-ballrad-100;
+   var boxboundy=boxheight-ballrad-70;//
+   var inboxboundx=ballrad+100;
+   var inboxboundy=ballrad;
+   var ballx=630;
+   var bally=350;
+   var ctx;
+   var ballvx=-23;
+   var ballvy=-30;
+   var tev;
+   var hCenter=630;
+   var keyCode;
+   var lifeNum=5;
+   var changeImage =0;
+   var i;
+   var nballx;
+   var nbally;
+   var ballGravity=0;
+   var n=0;
+   var swingCount=0;
+   var count=0;
+   
+   var nice=0;
+   var myscore=0;
+//////////////////////////////////////////////////////////////////////////////
+
+
+    var url = "ws://192.168.1.100:12345";
+    w = new WebSocket(url);
+ 
+ 	w.onmessage = function(e) {
+		if(e.data == "b")
+			changeImage=3;
+		if(e.data == "f")
+			changeImage=1;
+		if(e.data == "s")
+			setTimeout(reset,800);	
+		if(e.data == "l")
+			hCenter -= 100;	
+		if(e.data == "r")	
+			hCenter += 100;			
+	}
+	
+	
+	/*
+ 	w.onopen = function() {
+		alert("Open");
+    }
+    
+    w.onclose = function(e) {
+		alert("Close");
+    }
+    */
+    
+
+
+//////////////////////////////////////////////////////////////////////////////
+
+   function init(){
+	   
+    ctx=document.getElementById('canvas').getContext('2d');
+	window.addEventListener('keydown',getkeyAndMove,false);     
+	 
+    ctx.linewidth=ballrad;
+	
+	drawcourt();
+	Character();
+	Racket();
+	Character();
+	
+   }   
+  
+  function drawcourt(){
+	 var grad;
+	  
+	 //가??데??????
+	 grad=ctx.createLinearGradient(300,0,300,400);
+	 grad.addColorStop(0.7,'white');
+	 grad.addColorStop(1,'#EAEAEA');
+	 
+	 ctx.fillStyle=grad;
+	 ctx.fillRect(300, 0, 660, 400);
+	 
+	 //??쪽??이??사??리?? 
+	 grad=ctx.createLinearGradient(0,0,300,400);
+	 grad.addColorStop(0.7,'#EAEAEA');
+	 grad.addColorStop(1,'#C6C6C6');	 
+	   
+	 ctx.fillStyle=grad;
+     ctx.beginPath();
+     ctx.moveTo(0,0);
+     ctx.lineTo(300,0);
+     ctx.lineTo(300,400);
+     ctx.lineTo(0,700);
+     ctx.lineTo(0,0);
+     ctx.closePath();
+     ctx.fill();     
+	 
+     //??단바닥??다리꼴	 	 
+	 grad=ctx.createLinearGradient(0,700,0,400);
+	 grad.addColorStop(0.7,'#ffdab9');
+	 grad.addColorStop(1,'#EDAF8C');
+	 
+     ctx.fillStyle = grad;
+     ctx.beginPath();
+     ctx.moveTo(0,700);
+     ctx.lineTo(1260,700);
+     ctx.lineTo(960,400);
+     ctx.lineTo(300,400);
+     ctx.lineTo(0,700);
+     ctx.closePath();
+     ctx.fill();
+	      
+     //??른쪽사??드??다리꼴	 
+	 grad=ctx.createLinearGradient(1260,0,960,400);
+	 grad.addColorStop(0.7,'EAEAEA');
+	 grad.addColorStop(1,'#C6C6C6');
+	 
+     ctx.fillStyle = grad;
+     ctx.beginPath();
+     ctx.moveTo(960,0);
+     ctx.lineTo(1260,0);
+     ctx.lineTo(1260,700);
+     ctx.lineTo(960,400);
+     ctx.lineTo(960,0);
+     ctx.closePath();
+     ctx.fill();
+     
+     //붉???? 
+	 grad=ctx.createLinearGradient(300,200,960,200);
+	 grad.addColorStop(0,'#FF0000');
+	 grad.addColorStop(0.5,'#FFA2A2');
+	 grad.addColorStop(1,'#FF0000');
+	 
+     ctx.lineWidth=7;
+     ctx.strokeStyle=grad;
+     ctx.beginPath();
+     ctx.moveTo(300,200);
+     ctx.lineTo(960,200);
+     ctx.closePath();
+     ctx.stroke();
+     
+     //붉????
+     ctx.lineWidth=7;
+     ctx.strokeStyle="rgb(255,0,0)";
+     ctx.beginPath();
+     ctx.moveTo(300,350);
+     ctx.lineTo(960,350);
+     ctx.closePath();
+     ctx.stroke();
+     
+	 //??트
+      for(i=0; i<lifeNum; i++){
+		 ctx.save();
+		 ctx.translate(1160-i*90,-140);
+		 grad=ctx.createLinearGradient(0,180,0,300);
+		 
+		 grad.addColorStop(0.5,'#F15F5F');
+		 grad.addColorStop(1,'#FFA7A7');
+		 
+		 ctx.fillStyle = grad;
+		 ctx.scale(0.7,0.7);
+		 ctx.beginPath();
+		 ctx.moveTo(75,250);
+		 ctx.bezierCurveTo(75,247,70,235,50,235);
+		 ctx.bezierCurveTo(20,235,20,272.5,20,272);
+		 ctx.bezierCurveTo(20,290,40,312,75,330);
+		 ctx.bezierCurveTo(110,312,130,290,130,272);
+		 ctx.bezierCurveTo(130,272.5,130,235,100,235);
+		 ctx.bezierCurveTo(85,235,75,247,75,250);
+		 ctx.closePath();
+		 ctx.fill();
+		 ctx.restore();
+		 }  
+  }
+
+   function moveball(){
+
+	   //ctx.clearRect(boxx,boxy,boxwidth,boxheight);
+	   //ctx.fillStyle="white";
+	   //ctx.fillRect(boxx, boxy, boxwidth, boxheight);
+	   
+	   drawcourt();	
+       moveandcheck();
+	   
+	   if(bally<50){
+		   ballrad=15.4; yellowballrad=1.85;
+	   }else if(bally<70){
+		   ballrad=15.6; yellowballrad=1.90;
+	   }else if(bally<80){
+		   ballrad=15.8; yellowballrad=1.95;
+	   }else if(bally<90){
+		   ballrad=16; yellowballrad=2.00;
+	   }else if(bally<100){
+		   ballrad=16.2; yellowballrad=2.05;
+	   }else if(bally<110){
+		   ballrad=16.4; yellowballrad=2.10;
+	   }else if(bally<120){
+		   ballrad=16.6; yellowballrad=2.15;
+	   }else if(bally<130){
+		   ballrad=16.8; yellowballrad=2.2;
+	   }else if(bally<140){
+		   ballrad=17; yellowballrad=2.25;
+	   }else if(bally<150){
+		   ballrad=17.2; yellowballrad=2.3;
+	   }else if(bally<160){
+		   ballrad=17.4; yellowballrad=2.35;
+	   }else if(bally<170){
+		   ballrad=17.6; yellowballrad=2.4;
+	   }else if(bally<180){
+		   ballrad=17.8; yellowballrad=2.45;
+	   }else if(bally<190){
+		   ballrad=18; yellowballrad=2.5;
+	   }else if(bally<200){
+		   ballrad=18.2; yellowballrad=2.55;
+	   }else if(bally<210){
+		   ballrad=18.4; yellowballrad=2.6;
+	   }else if(bally<220){
+		   ballrad=18.6; yellowballrad=2.65;
+	   }else if(bally<230){
+		   ballrad=18.8; yellowballrad=2.7;
+	   }else if(bally<240){
+		   ballrad=19; yellowballrad=2.75;
+	   }else if(bally<250){
+		   ballrad=19.2; yellowballrad=2.8;
+	   }else if(bally<260){
+		   ballrad=19.4; yellowballrad=2.85;
+	   }else if(bally<270){
+		   ballrad=19.6; yellowballrad=2.9;
+	   }else if(bally<280){
+		   ballrad=19.8; yellowballrad=2.95;
+	   }else {
+		   ballrad=20; yellowballrad=3;
+	   }
+		   
+	   //검????
+       ctx.beginPath();
+       ctx.fillStyle="black";
+       ctx.arc(ballx ,bally, ballrad, 0, Math.PI*2, true);
+       ctx.fill();	 
+	  
+	   //검??공에??는 ??????
+	   ctx.beginPath();
+       ctx.fillStyle="yellow";
+       ctx.arc(ballx-3, bally-3, yellowballrad, 0, Math.PI*2, true);
+       ctx.fill();	   
+	   
+	   //검??공에??는 ??????
+	   ctx.beginPath();	   
+       ctx.fillStyle="yellow";
+       ctx.arc(ballx+3, bally+3, yellowballrad+0.35, 0, Math.PI*2, true);
+       ctx.fill();
+	   
+	   Racket();
+	   Character();
+	   score();
+	   
+   }
+
+  
+  function Racket(){
+	
+	ctx.save();
+	
+	if(changeImage==0){
+		   ctx.translate(hCenter-30,190);
+	   }else if(changeImage==1){
+		   ctx.translate(hCenter+370,360);
+		   ctx.rotate(Math.PI/2);
+	   }else if(changeImage==3){
+		   ctx.translate(hCenter-250,650);
+		   ctx.rotate(Math.PI/2*3);
+	   }	   
+	
+	//??켓??????
+	ctx.moveTo(110,50);
+	ctx.lineTo(190,50);
+	ctx.moveTo(100,60);
+	ctx.lineTo(200,60);
+	ctx.moveTo(100,70);
+	ctx.lineTo(200,70);
+	ctx.moveTo(100,80);
+	ctx.lineTo(200,80);
+	ctx.moveTo(100,90);
+	ctx.lineTo(200,90);
+	ctx.moveTo(100,100);
+	ctx.lineTo(200,100);
+	ctx.moveTo(100,110);
+	ctx.lineTo(200,110);
+	ctx.moveTo(110,120);
+	ctx.lineTo(190,120);
+	ctx.moveTo(110,130);
+	ctx.lineTo(190,130);
+	ctx.moveTo(110,140);
+	ctx.lineTo(190,140);
+	ctx.moveTo(120,150);
+	ctx.lineTo(180,150);
+	ctx.moveTo(130,160);
+	ctx.lineTo(170,160);	
+	
+	//??켓??세??
+	ctx.moveTo(110,50);
+	ctx.lineTo(110,130);
+	ctx.moveTo(120,40);
+	ctx.lineTo(120,150);
+	ctx.moveTo(130,40);
+	ctx.lineTo(130,160);
+	ctx.moveTo(140,40);
+	ctx.lineTo(140,170);
+	ctx.moveTo(150,40);
+	ctx.lineTo(150,170);
+	ctx.moveTo(160,40);
+	ctx.lineTo(160,170);
+	ctx.moveTo(170,40);
+	ctx.lineTo(170,160);
+	ctx.moveTo(180,40);
+	ctx.lineTo(180,150);
+	ctx.moveTo(190,50);
+	ctx.lineTo(190,130);	
+	
+	ctx.lineWidth="1";
+	ctx.strokeStyle="black";
+	ctx.stroke();	
+	
+	//??켓??
+	ctx.beginPath();
+	ctx.moveTo(110,50);
+	ctx.bezierCurveTo(130,30,170,30,190,50);	
+	ctx.moveTo(110,50);
+	ctx.quadraticCurveTo(80,80,120,150);	
+	ctx.moveTo(190,50);
+	ctx.quadraticCurveTo(220,80,180,150);
+	ctx.moveTo(120,150);
+	ctx.quadraticCurveTo(150,190,180,150);
+	
+	//??켓??잡??
+	ctx.moveTo(140,170);
+	ctx.lineTo(150,250);
+	ctx.moveTo(160,170);
+	ctx.lineTo(150,250);
+	ctx.moveTo(150,200);
+	ctx.lineTo(150,250);
+	ctx.lineWidth="8";
+	ctx.strokeStyle="#86E57F";
+	ctx.stroke();	
+	ctx.fillStyle="black";
+	ctx.fillRect(143,230,14,42);	
+}
+
+function Character() {  
+    	
+	ctx.restore();
+	
+	//??다??
+	ctx.fillStyle = "#FFF29E";
+	ctx.beginPath();
+	ctx.moveTo(hCenter-60,670);//1
+	ctx.lineTo(hCenter-45,555);//2
+	ctx.lineTo(hCenter-15,550);//3
+	ctx.lineTo(hCenter-35,675);//4	
+	ctx.closePath();
+	ctx.fill();
+	
+	//??른쪽다??
+	ctx.beginPath();
+	ctx.moveTo(hCenter+60,670);//1
+	ctx.lineTo(hCenter+45,555);//2
+	ctx.lineTo(hCenter+15,550);//3
+	ctx.lineTo(hCenter+35,675);//4	
+	ctx.closePath();
+	ctx.fill();
+
+	//??굴
+	ctx.beginPath();
+	ctx.arc(hCenter,355,40,0,Math.PI*2,true);
+	ctx.fill();
+	
+	//??
+	ctx.beginPath();
+	ctx.moveTo(hCenter-20,350);
+	ctx.lineTo(hCenter-20,410);
+	ctx.lineTo(hCenter+20,410);
+	ctx.lineTo(hCenter+20,350);
+	ctx.closePath();
+	ctx.fill();
+	
+	//??른쪽??
+	ctx.beginPath();
+	ctx.arc(hCenter+35,360,10,0,Math.PI*2,true);
+	ctx.fill();	
+	
+	//??쪽귀
+	ctx.beginPath();
+	ctx.arc(hCenter-35,360,10,0,Math.PI*2,true);
+	ctx.fill();
+	
+	if(changeImage==0) {		
+		//??팔
+		ctx.beginPath();
+		ctx.moveTo(hCenter-120,495);//1
+		ctx.lineTo(hCenter-55,430);//2	
+		ctx.lineTo(hCenter-70,475);//3
+		ctx.lineTo(hCenter-106,510);//4
+		ctx.closePath();
+		ctx.fill();
+		
+		//??른??
+		ctx.beginPath();
+		ctx.moveTo(hCenter+75,465);//1
+		ctx.lineTo(hCenter+110,430);//2	
+		ctx.lineTo(hCenter+125,445);//3
+		ctx.lineTo(hCenter+90,480);//4
+		ctx.closePath();
+		ctx.fill();
+		ctx.beginPath();
+		ctx.arc(hCenter+82,470,12,0,Math.PI*2,true);
+		ctx.fill();	
+		
+		//??손
+		ctx.beginPath();
+		ctx.arc(hCenter-115,505,12,0,Math.PI*2,true);
+		ctx.fill();	
+		ctx.beginPath();
+		ctx.arc(hCenter-117,506,12,0,Math.PI*2,true);
+		ctx.fill();	
+		ctx.beginPath();
+		ctx.arc(hCenter-119,507,12,0,Math.PI*2,true);
+		ctx.fill();	
+		
+		//??른??
+		ctx.beginPath();
+		ctx.arc(hCenter+120,436,12,0,Math.PI*2,true);
+		ctx.fill();
+		ctx.arc(hCenter+124,435,12,0,Math.PI*2,true);
+		ctx.fill();	
+		ctx.beginPath();
+		ctx.arc(hCenter+126,434,12,0,Math.PI*2,true);
+		ctx.fill();		
+		
+		if(count==1&&!(swingCount==1))	{
+			swingCount=3;
+		}else if(count==2&&!(swingCount==2))	{
+			swingCount=4;	
+		}else{
+			swingCount=0;
+			count=0;	
+		}
+		
+		
+	}else if(changeImage==1) {
+		
+		//??팔
+		ctx.beginPath();
+		ctx.moveTo(hCenter-120,495);//1
+		ctx.lineTo(hCenter-55,430);//2	
+		ctx.lineTo(hCenter-70,475);//3
+		ctx.lineTo(hCenter-106,510);//4
+		ctx.closePath();
+		ctx.fill();
+		
+		//??른??
+		ctx.beginPath();
+		ctx.moveTo(hCenter+120,495);//1
+		ctx.lineTo(hCenter+55,430);//2	
+		ctx.lineTo(hCenter+70,475);//3
+		ctx.lineTo(hCenter+106,510);//4
+		ctx.closePath();
+		ctx.fill();		
+		
+		//??손
+		ctx.beginPath();
+		ctx.arc(hCenter-115,505,12,0,Math.PI*2,true);
+		ctx.fill();	
+		ctx.beginPath();
+		ctx.arc(hCenter-117,506,12,0,Math.PI*2,true);
+		ctx.fill();	
+		ctx.beginPath();
+		ctx.arc(hCenter-119,507,12,0,Math.PI*2,true);
+		ctx.fill();	
+		
+		//??른??
+		ctx.beginPath();
+		ctx.arc(hCenter+115,505,12,0,Math.PI*2,true);
+		ctx.fill();
+		ctx.arc(hCenter+117,506,12,0,Math.PI*2,true);
+		ctx.fill();	
+		ctx.beginPath();
+		ctx.arc(hCenter+119,507,12,0,Math.PI*2,true);
+		ctx.fill();
+		
+		setTimeout(imageCountChange,300);		
+		count=1;
+		
+	}else if(changeImage==3) {
+		
+		//??팔
+		ctx.beginPath();
+		ctx.moveTo(hCenter-120,495);//1
+		ctx.lineTo(hCenter-55,430);//2	
+		ctx.lineTo(hCenter-70,475);//3
+		ctx.lineTo(hCenter-106,510);//4
+		ctx.closePath();
+		ctx.fill();
+	
+		//??른??
+		ctx.beginPath();
+		ctx.moveTo(hCenter+40,495);//1
+		ctx.lineTo(hCenter+75,460);//2	
+		ctx.lineTo(hCenter+90,475);//3
+		ctx.lineTo(hCenter+54,510);//4
+		ctx.closePath();
+		ctx.fill();
+		ctx.beginPath();
+		ctx.arc(hCenter+79,469,12,0,Math.PI*2,true);
+		ctx.fill();	
+		
+		//??손
+		ctx.beginPath();
+		ctx.arc(hCenter-115,505,12,0,Math.PI*2,true);
+		ctx.fill();	
+		ctx.beginPath();
+		ctx.arc(hCenter-117,506,12,0,Math.PI*2,true);
+		ctx.fill();	
+		ctx.beginPath();
+		ctx.arc(hCenter-119,507,12,0,Math.PI*2,true);
+		ctx.fill();	
+		
+		//??른??
+		ctx.beginPath();
+		ctx.arc(hCenter+45,505,12,0,Math.PI*2,true);
+		ctx.fill();	
+		ctx.beginPath();
+		ctx.arc(hCenter+43,506,12,0,Math.PI*2,true);
+		ctx.fill();	
+		ctx.beginPath();
+		ctx.arc(hCenter+41,507,12,0,Math.PI*2,true);
+		ctx.fill();
+		
+		setTimeout(imageCountChange,300);
+		//changeImage=4;
+	
+		count=2;			   
+	}
+	
+	//??머??
+	ctx.save();
+	ctx.translate(hCenter-45,255);
+	ctx.scale(0.7,0.7);
+	ctx.lineWidth="1";
+	ctx.fillStyle="#000000";
+	ctx.beginPath();
+	ctx.moveTo(120,120);
+	ctx.bezierCurveTo(125,120,134,116,130,103);
+	ctx.bezierCurveTo(115,110,120,110,108,108);
+	ctx.bezierCurveTo(120,106,129,102,125,85);
+	ctx.bezierCurveTo(110,95,115,90,100,92);
+	ctx.bezierCurveTo(105,91,114,87,115,70);
+	ctx.bezierCurveTo(100,78,105,75,90,77);
+	ctx.closePath();
+	ctx.fill();
+	ctx.restore();
+	
+	//머리카락
+	ctx.beginPath();
+	ctx.arc(hCenter,350,40,0,Math.PI*2,true);
+	ctx.fillStyle="black"
+	ctx.fill();
+	ctx.beginPath();
+	ctx.arc(hCenter,345,40,0,Math.PI*2,true);
+	ctx.fill();	
+	
+	//바??
+	ctx.fillStyle = "#003399";
+	ctx.beginPath();
+	ctx.moveTo(hCenter-60,600);//1
+	ctx.lineTo(hCenter-45,525);//2
+	ctx.lineTo(hCenter+45,525);//3
+	ctx.lineTo(hCenter+60,600);//4
+	ctx.lineTo(hCenter+10,610);//5
+	ctx.lineTo(hCenter,560);//6
+	ctx.lineTo(hCenter-10,610);//7	
+	ctx.closePath();
+	ctx.fill();		
+	
+	ctx.fillStyle = "#ffffff";
+	ctx.beginPath();
+	ctx.moveTo(hCenter-54,602);//1
+	ctx.lineTo(hCenter-39,525);//2
+	ctx.lineTo(hCenter-42,525);//3
+	ctx.lineTo(hCenter-57,601);//4
+	ctx.closePath();
+	ctx.moveTo(hCenter-47,604);//1
+	ctx.lineTo(hCenter-32,525);//2
+	ctx.lineTo(hCenter-35,525);//3
+	ctx.lineTo(hCenter-50,603);//4
+	ctx.closePath();
+	ctx.moveTo(hCenter+54,602);//1
+	ctx.lineTo(hCenter+39,525);//2
+	ctx.lineTo(hCenter+42,525);//3
+	ctx.lineTo(hCenter+57,601);//4
+	ctx.closePath();
+	ctx.moveTo(hCenter+47,604);//1
+	ctx.lineTo(hCenter+32,525);//2
+	ctx.lineTo(hCenter+35,525);//3
+	ctx.lineTo(hCenter+50,603);//4
+	ctx.closePath();
+	ctx.fill();
+	
+	//??에??
+	ctx.fillStyle = "#B2CCFF";
+	ctx.beginPath();
+	ctx.moveTo(hCenter-100,460);//1
+	ctx.lineTo(hCenter-45,405);//2
+	ctx.lineTo(hCenter-25,400);//3
+	ctx.lineTo(hCenter+25,400);//4
+	ctx.lineTo(hCenter+45,405);//5
+	ctx.lineTo(hCenter+100,460);//6
+	ctx.lineTo(hCenter+70,490);//7
+	ctx.lineTo(hCenter+50,470);//8	
+	ctx.lineTo(hCenter+50,530);//9
+	ctx.lineTo(hCenter-50,530);//10	
+	ctx.lineTo(hCenter-50,470);//11
+	ctx.lineTo(hCenter-70,490);//12
+	ctx.closePath();
+	ctx.fill();	
+	
+	//??발
+	ctx.fillStyle = "#003399";
+	ctx.beginPath();
+	ctx.moveTo(hCenter-60,670);//1
+	ctx.lineTo(hCenter-35,670);//2	
+	ctx.lineTo(hCenter-30,675);//3	
+	ctx.lineTo(hCenter-35,690);//4	
+	ctx.lineTo(hCenter-60,690);//5
+	ctx.lineTo(hCenter-65,675);//6		
+	ctx.closePath();
+	ctx.fill();
+	ctx.fillStyle="#8C8C8C";
+	ctx.fillRect(hCenter-62 , 690, 29, 5);
+	
+	//??른??
+	ctx.fillStyle = "#003399";
+	ctx.beginPath();
+	ctx.moveTo(hCenter+60,670);//1
+	ctx.lineTo(hCenter+35,670);//2	
+	ctx.lineTo(hCenter+30,675);//3	
+	ctx.lineTo(hCenter+35,690);//4	
+	ctx.lineTo(hCenter+60,690);//5
+	ctx.lineTo(hCenter+65,675);//6	
+	ctx.closePath();
+	ctx.fill();
+	ctx.fillStyle="#8C8C8C";
+	ctx.fillRect(hCenter+33 , 690, 29, 5);
+	
+  }  
+
+   function moveandcheck(){
+	
+	if(ballvy<0){
+		ballGravity+=n;
+		n+=0.5;
+	}else{
+	 	ballGravity+=n;
+		n+=0.5;
+	}	
+	
+	
+    nballx=ballx+ballvx;
+    nbally=bally+ballvy+ballGravity;
+	
+    if(nballx > boxboundx){
+     ballvx=-ballvx;
+     nballx=boxboundx;
+    }
+
+    if(nballx<inboxboundx){
+     nballx=inboxboundx;
+     ballvx=-ballvx;
+    }
+
+	//바닥??공이??으??멈춤
+    if(nbally>boxboundy){
+		stop();
+		lifeNum--;		
+    }
+		
+	//??핸??
+	if((nbally < 600 &&nbally > 420) 
+	&& (nballx > hCenter+150 && nballx < hCenter+350)
+	&&(ballvy>0)
+	&&(changeImage==1||changeImage==2)
+	&&(!(swingCount==1))){
+		if((nbally < 535 &&nbally > 485) 
+		&& (nballx > hCenter+225 && nballx < hCenter+325)){
+			nice=1;
+		}else{
+			nice=3;	
+		}
+		nbally=460;
+     	ballvy=-48;
+		if(Math.floor(Math.random() *2)==0){
+			ballvx=Math.abs(ballvx);	
+		}else{
+			ballvx=-Math.abs(ballvx);	
+		}
+		ballGravity=0;	
+		n=0;
+		swingCount=1;
+    }
+	
+	//백핸??
+	if((nbally < 590 && nbally > 410) 
+	&& (nballx > hCenter-375 && nballx < hCenter-75)
+	&&(ballvy>0)
+	&&(changeImage==3||changeImage==4)
+	&&(!(swingCount==2))){
+		if((nbally < 525 && nbally > 475) 
+			&& (nballx > hCenter-200 && nballx < hCenter-100)){
+			nice=2;
+		}else{
+			nice=3;	
+		}
+		nbally=450;
+     	ballvy=-48;
+		if(Math.floor(Math.random() *2)==0){
+			ballvx=Math.abs(ballvx);	
+		}else{
+			ballvx=-Math.abs(ballvx);	
+		}
+		ballGravity=0;	
+		n=0;
+		swingCount=2;
+    }
+
+    if(nbally<inboxboundy){
+     nbally=inboxboundy;
+	 //ballvx=-ballvx;
+     ballvy=-ballvy;
+	 ballGravity=-ballGravity;
+    }	
+	
+    ballx=nballx;
+    bally=nbally;
+	
+	swingEvent();
+   }
+   
+   function getkeyAndMove(event) {
+	   var keyCode; 
+	   
+	   if(event == null){
+		   keyCode = window.event.keyCode; 
+		   window.event.preventDefault();
+	   }else {
+		   keyCode = event.keyCode;
+		   event.preventDefault();
+	   }
+	 
+	 switch(keyCode){
+		 case 13://enter
+		 setTimeout(reset,1000);
+		 break;
+		 case 37:  //left arrow
+		 hCenter -= 100;
+		 break; 
+		 case 39: //right arrow
+		 hCenter += 100;
+		 break; 
+		 case 65://A
+		 changeImage=3;
+		 break;
+		 case 83://S
+		 changeImage=1;
+		 break;
+	 }
+	 drawracket();
+	 drawcharacter();
+   }
+   
+   function stop(){
+	   clearInterval(tev);
+	   setTimeout(reset,3000);//단위는밀리초(3초)  	   
+   }
+   
+   function reset(){
+	   ballx=630;
+	   bally=455;
+	   ballvx=-20;
+	   if(Math.floor(Math.random() *2)==0){
+			ballvx=Math.abs(ballvx);	
+		}else{
+			ballvx=-Math.abs(ballvx);	
+		}	   
+	   ballvy=-48;
+	   hCenter=630;
+	   n=0;
+	   ballGravity=0;
+	   count=0;
+	   if(!(lifeNum<0)){
+	   tev = setInterval(moveball,100); 
+	   }else{
+		localStorage.setItem("finalscore",myscore);
+	   	location="gameover.html";
+	   }
+   }
+   
+  
+   function swingEvent(){
+	   
+	   var img1 = new Image();
+	   var img2 = new Image();
+	   var img3 = new Image();
+	   var img4 = new Image();
+	   var img5 = new Image();
+	   	   
+	   if(changeImage==0){//포핸드
+		   if(swingCount==1){
+		   		img4.onload=function(){
+							ctx.drawImage(img4,hCenter,200,400,90);
+					   }
+			   if(nice==1){
+				   img2.onload=function(){
+						ctx.drawImage(img2,hCenter+200,300,200,70);
+				   }				   
+				   myscore+=100;
+			   }else if(nice==3){
+				   img1.onload=function(){
+				   ctx.drawImage(img1,hCenter+200,300,100,100);
+				   }
+				   myscore+=10;
+			   }
+			   nice=0;
+		   }
+		   
+		   if(swingCount==2){//백핸드
+		   		 img5.onload=function(){
+								ctx.drawImage(img5,hCenter-200,200,400,90);
+						   }	
+			   if(nice==2){
+				   img2.onload=function(){
+						ctx.drawImage(img2,hCenter-225,300,200,70);
+				   }
+				   myscore+=100;
+			   }else if(nice==3){
+				   img1.onload=function(){
+				   ctx.drawImage(img1,hCenter-225,300,100,100);
+			   }
+			   myscore+=10;
+			   }
+			   nice=0;
+		   }
+		   if((swingCount==3&&count==1)){
+			   img3.onload=function(){
+			   ctx.drawImage(img3,hCenter+200,300,200,60);
+		   	   }
+	   		}else if((swingCount==4&&count==2)){
+			   img3.onload=function(){
+			   ctx.drawImage(img3,hCenter-225,300,200,60);
+		  	   }
+			   count=0;
+		   }		   
+	   }
+	   
+	 img1.src="$$LGWAFLibrary/images/hit.png";
+	 img2.src="$$LGWAFLibrary/images/nice.png";
+	 img3.src="$$LGWAFLibrary/images/miss.png";	
+	 img4.src="$$LGWAFLibrary/images/Forehand.png";
+	 img5.src="$$LGWAFLibrary/images/Backhand.png";
+   }
+   
+   function imageCountChange() {
+		changeImage=0;   	  
+   }
+   
+   function score(){
+	
+	ctx.fillStyle="rgba(255,255,255,0.5)";
+	ctx.fillRect(10,10,270,100);
+	ctx.font="16pt Arial";
+	ctx.fillStyle="black";
+	ctx.fillText("score",30,30);
+	
+	ctx.lineWidth="3";
+	ctx.font = "50pt Arial Black";
+	ctx.strokeStyle="black";
+	ctx.strokeText(myscore,30,95); 
+   }
+   
+   function playSound(num) {
+		var sound = document.getElementById("sound" + num);
+		sound.play();
+	}
+   
+  </script>
+  </head>
+
+<body onLoad="init();">
+<canvas id="canvas" width="1260" height="700">이 브라우저는 HTML5의 canvas 요소를 지원 하지 않습니다.</canvas>
+<div>
+	<object type="application/x-netcast-av" data="$$LGWAFLibrary/sound/Acadejourney.mp3" width="0"
+	height="0" playcount="0" id="media" autoStart="true"></object>
+	<object type="audio/x-wav" id="sound1" data="$$LGWAFLibrary/sound/hit1.wav"
+	width="0" height="0" autostart="false"></object>
+	<object type="audio/x-wav" id="sound2" data="$$LGWAFLibrary/sound/nice.wav"
+	width="0" height="0" autostart="false"></object>
+	<object type="audio/x-wav" id="sound3" data="$$LGWAFLibrary/sound/uhoh.wav" 
+	width="0" height="0" autostart="false"></object>
+</div>
+</body>
+</html>
